@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FORA OFFICE</title>
+<style>
+html,body{width:100%;height:100%;margin:0;background:#000;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Arial}
+canvas{width:100%;height:100%;display:block;cursor:grab}canvas:active{cursor:grabbing}
+#menu{position:fixed;left:16px;right:16px;bottom:16px;z-index:2;display:flex;flex-wrap:wrap;gap:8px;padding:8px;border-radius:12px;background:rgba(0,0,0,.50);backdrop-filter:blur(8px);max-height:230px;overflow:auto;align-items:flex-start}
+#menu button{position:relative;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:#111;padding:0;overflow:hidden;cursor:pointer;width:150px;height:90px;flex:0 0 150px}
+#menu button img{width:150px;height:90px;display:block;object-fit:cover}
+#menu button span{position:absolute;left:0;right:0;bottom:0;padding:7px 8px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.82));font:12px system-ui;text-align:left}
+#menu button.active{outline:2px solid #fff}
+#tip{position:fixed;top:14px;left:50%;transform:translateX(-50%);color:white;background:rgba(0,0,0,.45);padding:7px 10px;border-radius:8px;font-size:13px;pointer-events:none}
+</style></head><body><canvas id="v"></canvas><div id="menu"></div><div id="tip">Drag to look around · wheel to zoom</div>
+<script>
+const scenes=[{"title":"3F_OFFICE","file":"images/4898-0100.jpg","thumb":"images/4898-0100.jpg","id":"48530e37-dd70-4974-a8f9-36e9a44492ac"},{"title":"4F_OFFICE","file":"images/4898-0201.jpg","thumb":"images/4898-0201.jpg","id":"7f96854f-6781-498e-9246-fb1f2dd4a320"},{"title":"4F_EVENT SPACE","file":"images/4898-0300.jpg","thumb":"images/4898-0300.jpg","id":"551af4f5-711f-4c20-a798-c2371ba7bc62"},{"title":"5F_TERRACE","file":"images/4898-0350.jpg","thumb":"images/4898-0350.jpg","id":"5e7a20bc-fcf8-46a0-849a-49814bc5203b"}];
+const canvas=document.getElementById('v'),menu=document.getElementById('menu');let V=null;
+function viewer(url){
+ const gl=canvas.getContext('webgl',{antialias:true});if(!gl){alert('WebGL is required');return null}
+ const vs='attribute vec2 p;varying vec2 uv;void main(){uv=(p+1.0)*0.5;gl_Position=vec4(p,0.0,1.0);}';
+ const fs='precision highp float;varying vec2 uv;uniform sampler2D tex;uniform vec2 res;uniform float yaw,pitch,fov;const float PI=3.141592653589793;void main(){vec2 q=(gl_FragCoord.xy/res-0.5)*2.0;q.x*=res.x/res.y;float z=1.0/tan(fov*0.5);vec3 d=normalize(vec3(q.x,q.y,z));float cp=cos(pitch),sp=sin(pitch);d=vec3(d.x,cp*d.y-sp*d.z,sp*d.y+cp*d.z);float cy=cos(yaw),sy=sin(yaw);d=vec3(cy*d.x+sy*d.z,d.y,-sy*d.x+cy*d.z);float lon=atan(d.x,d.z),lat=asin(clamp(d.y,-1.0,1.0));vec2 t=vec2(0.5+lon/(2.0*PI),0.5-lat/PI);gl_FragColor=texture2D(tex,t);}';
+ function sh(t,s){let o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o}
+ let pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(pr);gl.useProgram(pr);
+ let b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);let a=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+ let L={res:gl.getUniformLocation(pr,'res'),yaw:gl.getUniformLocation(pr,'yaw'),pitch:gl.getUniformLocation(pr,'pitch'),fov:gl.getUniformLocation(pr,'fov')},t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+ let yaw=0,pitch=0,fov=1.309,drag=false,lx=0,ly=0,dead=false,raf=0,img=new Image();img.onload=()=>{gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img);draw()};img.src=url;
+ function draw(){if(dead)return;let r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.round(r.width*d),h=Math.round(r.height*d);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h)}gl.uniform2f(L.res,w,h);gl.uniform1f(L.yaw,yaw);gl.uniform1f(L.pitch,pitch);gl.uniform1f(L.fov,fov);gl.drawArrays(gl.TRIANGLES,0,6);raf=requestAnimationFrame(draw)}
+ const dn=e=>{drag=true;lx=e.clientX;ly=e.clientY},mv=e=>{if(!drag)return;yaw-=(e.clientX-lx)*.005;pitch+=(e.clientY-ly)*.005;pitch=Math.max(-1.5,Math.min(1.5,pitch));lx=e.clientX;ly=e.clientY},up=()=>drag=false,wh=e=>{e.preventDefault();fov=Math.max(.45,Math.min(1.9,fov+e.deltaY*.001))};
+ canvas.addEventListener('pointerdown',dn);canvas.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);canvas.addEventListener('wheel',wh,{passive:false});
+ return{destroy(){dead=true;cancelAnimationFrame(raf);canvas.removeEventListener('pointerdown',dn);canvas.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);canvas.removeEventListener('wheel',wh)}}
+}
+function load(i){if(V)V.destroy();V=viewer(scenes[i].file)}
+function setActiveExport(i){
+  [...menu.querySelectorAll('button')].forEach((b,idx)=>b.classList.toggle('active',idx===i));
+}
+scenes.forEach((s,i)=>{
+  let b=document.createElement('button');
+  let img=document.createElement('img');img.src=s.thumb;img.alt=s.title+' thumbnail';
+  let label=document.createElement('span');label.textContent=s.title;
+  b.appendChild(img);b.appendChild(label);
+  b.addEventListener('click',()=>{load(i);setActiveExport(i)});
+  menu.appendChild(b);
+});
+if(scenes.length<2)menu.style.display='none';load(0);setActiveExport(0);setTimeout(()=>document.getElementById('tip').style.display='none',3500);
+</script></body></html>
