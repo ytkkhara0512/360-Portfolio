@@ -1,0 +1,69 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>King&#39;s Road Park 2</title>
+<style>
+html,body{width:100%;height:100%;margin:0;background:#000;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Arial}
+canvas{width:100%;height:100%;display:block;cursor:grab}canvas:active{cursor:grabbing}
+#menu{position:fixed;left:16px;right:16px;bottom:16px;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;padding:8px;border-radius:12px;background:rgba(0,0,0,.50);backdrop-filter:blur(8px);overflow-x:auto;overflow-y:hidden;align-items:flex-start;scrollbar-width:thin}
+#menu button{position:relative;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:#111;padding:0;overflow:hidden;cursor:pointer;width:150px;height:90px;flex:0 0 150px}
+#menu button img{width:150px;height:90px;display:block;object-fit:cover}
+#menu button span{position:absolute;left:0;right:0;bottom:0;padding:7px 8px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.82));font:12px system-ui;text-align:left}
+#menu button.active{outline:2px solid #fff}
+#tip{position:fixed;top:14px;left:50%;transform:translateX(-50%);color:white;background:rgba(0,0,0,.45);padding:7px 10px;border-radius:8px;font-size:13px;pointer-events:none}
+</style></head><body><canvas id="v"></canvas><div id="menu"></div><div id="tip">Drag to look around · wheel to zoom</div>
+<script>
+const scenes=[{"title":"Living_Dark","file":"images/7690-5200.jpg","thumb":"thumbs/7690-5200.jpg","id":"3554bc6e-2cf2-426d-9e85-3fe424e880cf"},{"title":"Living_Light","file":"images/7690-5205.jpg","thumb":"thumbs/7690-5205.jpg","id":"d3aec2bb-f16d-4cdc-b6cd-cc64b86563f9"},{"title":"Dining_Dark","file":"images/7690-5250.jpg","thumb":"thumbs/7690-5250.jpg","id":"92d00913-a9eb-4767-b585-8f2a7dfe2dec"},{"title":"Dining_Light","file":"images/7690-5255.jpg","thumb":"thumbs/7690-5255.jpg","id":"9d38cfd2-57f9-426c-bd22-679e499e0c6b"},{"title":"Kitchen_Dark","file":"images/7690-5300.jpg","thumb":"thumbs/7690-5300.jpg","id":"7725653f-77fa-4bd0-9a93-e412163ed6b8"},{"title":"Kitchen_Light","file":"images/7690-5305.jpg","thumb":"thumbs/7690-5305.jpg","id":"6342fea0-5cf2-4fca-b266-21973b9f94aa"},{"title":"Bedroom_01_Dark","file":"images/7690-5350.jpg","thumb":"thumbs/7690-5350.jpg","id":"e0708b8e-11e8-443b-824d-2932cda89002"},{"title":"Bedroom_01_Light","file":"images/7690-5355.jpg","thumb":"thumbs/7690-5355.jpg","id":"79b4e953-afeb-49af-b2ce-9ade5b556b5c"},{"title":"Ensuite_Bathroom_Dark","file":"images/7690-5400.jpg","thumb":"thumbs/7690-5400.jpg","id":"2ee38aba-5aa2-4b4f-b5c7-61c6dad461d9"},{"title":"Ensuite_Bathroom_Light","file":"images/7690-5405.jpg","thumb":"thumbs/7690-5405.jpg","id":"0258014b-dedb-49ee-a2bb-a93d69115f16"},{"title":"Corridor_01_Dark","file":"images/7690-5410.jpg","thumb":"thumbs/7690-5410.jpg","id":"4a99987a-ddcf-48b7-82a3-c1a406b1f421"},{"title":"Corridor_01_Light","file":"images/7690-5415.jpg","thumb":"thumbs/7690-5415.jpg","id":"98b531f8-56bb-437d-af83-98733751ac5d"},{"title":"Corridor_02_Dark","file":"images/7690-5420.jpg","thumb":"thumbs/7690-5420.jpg","id":"6e550dbe-932e-4818-b4aa-08a7a0b5b899"},{"title":"Corridor_02_Light","file":"images/7690-5425.jpg","thumb":"thumbs/7690-5425.jpg","id":"ab75e549-ae7b-4e7c-9a57-29b434108c09"},{"title":"Corridor_03_Dark","file":"images/7690-5430.jpg","thumb":"thumbs/7690-5430.jpg","id":"e4ba41f1-ad28-42e6-91ca-99a88642d499"},{"title":"Corridor_03_Light","file":"images/7690-5435.jpg","thumb":"thumbs/7690-5435.jpg","id":"4ccc3854-81cb-4103-b312-ee4f45a6f5b9"},{"title":"Bedroom_02_Dark","file":"images/7690-5440.jpg","thumb":"thumbs/7690-5440.jpg","id":"ab3b72bf-43c6-4fa0-943b-873d1babeb7b"},{"title":"Bedroom_02_Light","file":"images/7690-5445.jpg","thumb":"thumbs/7690-5445.jpg","id":"fc4527a8-8364-4894-8892-d3c0e257ca05"},{"title":"Ensuite_Bathroom_02_Dark","file":"images/7690-5450.jpg","thumb":"thumbs/7690-5450.jpg","id":"29a3711c-d0f8-4905-b7d4-c4a9a2ab0782"},{"title":"Ensuite_Bathroom_02_Light","file":"images/7690-5455.jpg","thumb":"thumbs/7690-5455.jpg","id":"d07ccd2a-2ae3-45ce-8561-96c5cf74a4eb"},{"title":"Bedroom_03_Dark","file":"images/7690-5460.jpg","thumb":"thumbs/7690-5460.jpg","id":"c57a5ee9-9edb-4ccf-a59c-14b04fd5a7f5"},{"title":"Bedroom_03_Light","file":"images/7690-5465.jpg","thumb":"thumbs/7690-5465.jpg","id":"6e23a407-a201-4151-9460-f1d5250693a5"},{"title":"Bathroom_Dark","file":"images/7690-5470.jpg","thumb":"thumbs/7690-5470.jpg","id":"a15f7711-009c-4630-baee-4ebfd80984ed"},{"title":"Bathroom_Light","file":"images/7690-5475.jpg","thumb":"thumbs/7690-5475.jpg","id":"c27f232f-ee46-4b78-abb3-857ee37cf85f"}];
+const canvas=document.getElementById('v'),menu=document.getElementById('menu');
+function viewer(){
+ const gl=canvas.getContext('webgl',{antialias:true,preserveDrawingBuffer:false})||canvas.getContext('experimental-webgl',{antialias:true});
+ if(!gl){alert('WebGL is required');return null}
+ const vs='attribute vec2 p;varying vec2 uv;void main(){uv=(p+1.0)*0.5;gl_Position=vec4(p,0.0,1.0);}';
+ const fs='precision highp float;varying vec2 uv;uniform sampler2D tex;uniform vec2 res;uniform float yaw,pitch,fov;const float PI=3.141592653589793;void main(){vec2 q=(gl_FragCoord.xy/res-0.5)*2.0;q.x*=res.x/res.y;float z=1.0/tan(fov*0.5);vec3 d=normalize(vec3(q.x,q.y,z));float cp=cos(pitch),sp=sin(pitch);d=vec3(d.x,cp*d.y-sp*d.z,sp*d.y+cp*d.z);float cy=cos(yaw),sy=sin(yaw);d=vec3(cy*d.x+sy*d.z,d.y,-sy*d.x+cy*d.z);float lon=atan(d.x,d.z),lat=asin(clamp(d.y,-1.0,1.0));vec2 t=vec2(0.5+lon/(2.0*PI),0.5-lat/PI);gl_FragColor=texture2D(tex,t);}';
+ function sh(t,s){let o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o}
+ let pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(pr);gl.useProgram(pr);
+ let b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+ let a=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+ let L={res:gl.getUniformLocation(pr,'res'),yaw:gl.getUniformLocation(pr,'yaw'),pitch:gl.getUniformLocation(pr,'pitch'),fov:gl.getUniformLocation(pr,'fov')};
+ let t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+ let yaw=0,pitch=0,fov=1.309,drag=false,lx=0,ly=0,dead=false,raf=0,token=0;
+
+ function setImage(lowUrl,highUrl){
+   const my=++token;
+   const apply=(img,resetView)=>{if(dead||my!==token)return;gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,0);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img);if(resetView){yaw=0;pitch=0}if(!raf)draw()};
+   const low=new Image();
+   low.onload=()=>{
+     if(dead||my!==token)return;
+     apply(low,true);
+     if(highUrl && highUrl!==lowUrl){
+       const high=new Image();
+       high.onload=()=>apply(high,false);
+       high.src=highUrl;
+     }
+   };
+   low.onerror=()=>{
+     if(!highUrl||dead||my!==token)return;
+     const high=new Image();
+     high.onload=()=>apply(high,true);
+     high.src=highUrl;
+   };
+   low.src=lowUrl||highUrl;
+ }
+ function draw(){if(dead||gl.isContextLost())return;let r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(2,Math.round(r.width*d)),h=Math.max(2,Math.round(r.height*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h)}gl.uniform2f(L.res,w,h);gl.uniform1f(L.yaw,yaw);gl.uniform1f(L.pitch,pitch);gl.uniform1f(L.fov,fov);gl.drawArrays(gl.TRIANGLES,0,6);raf=requestAnimationFrame(draw)}
+ const dn=e=>{drag=true;lx=e.clientX;ly=e.clientY},mv=e=>{if(!drag)return;yaw-=(e.clientX-lx)*.005;pitch+=(e.clientY-ly)*.005;pitch=Math.max(-1.5,Math.min(1.5,pitch));lx=e.clientX;ly=e.clientY},up=()=>drag=false,wh=e=>{e.preventDefault();fov=Math.max(.45,Math.min(1.9,fov+e.deltaY*.001))};
+ canvas.addEventListener('pointerdown',dn);canvas.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);canvas.addEventListener('wheel',wh,{passive:false});
+ return{setImage}
+}
+const V=viewer();
+function load(i){if(V)V.setImage(scenes[i].thumb,scenes[i].file)}
+function setActiveExport(i){
+  [...menu.querySelectorAll('button')].forEach((b,idx)=>b.classList.toggle('active',idx===i));
+}
+scenes.forEach((s,i)=>{
+  let b=document.createElement('button');
+  let img=document.createElement('img');img.loading='lazy';img.decoding='async';img.src=s.thumb;img.alt=s.title+' thumbnail';
+  let label=document.createElement('span');label.textContent=s.title;
+  b.appendChild(img);b.appendChild(label);
+  b.addEventListener('click',()=>{load(i);setActiveExport(i)});
+  menu.appendChild(b);
+});
+if(scenes.length<2)menu.style.display='none';load(0);setActiveExport(0);setTimeout(()=>document.getElementById('tip').style.display='none',3500);
+</script></body></html>
