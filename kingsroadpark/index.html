@@ -1,9 +1,9 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KING&#39;S ROAD PARK</title>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>King&#39;s Road Park</title>
 <style>
 html,body{width:100%;height:100%;margin:0;background:#000;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Arial}
 canvas{width:100%;height:100%;display:block;cursor:grab}canvas:active{cursor:grabbing}
-#menu{position:fixed;left:16px;right:16px;bottom:16px;z-index:2;display:flex;flex-wrap:wrap;gap:8px;padding:8px;border-radius:12px;background:rgba(0,0,0,.50);backdrop-filter:blur(8px);max-height:230px;overflow:auto;align-items:flex-start}
+#menu{position:fixed;left:16px;right:16px;bottom:16px;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;padding:8px;border-radius:12px;background:rgba(0,0,0,.50);backdrop-filter:blur(8px);overflow-x:auto;overflow-y:hidden;align-items:flex-start;scrollbar-width:thin}
 #menu button{position:relative;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:#111;padding:0;overflow:hidden;cursor:pointer;width:150px;height:90px;flex:0 0 150px}
 #menu button img{width:150px;height:90px;display:block;object-fit:cover}
 #menu button span{position:absolute;left:0;right:0;bottom:0;padding:7px 8px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.82));font:12px system-ui;text-align:left}
@@ -11,7 +11,7 @@ canvas{width:100%;height:100%;display:block;cursor:grab}canvas:active{cursor:gra
 #tip{position:fixed;top:14px;left:50%;transform:translateX(-50%);color:white;background:rgba(0,0,0,.45);padding:7px 10px;border-radius:8px;font-size:13px;pointer-events:none}
 </style></head><body><canvas id="v"></canvas><div id="menu"></div><div id="tip">Drag to look around · wheel to zoom</div>
 <script>
-const scenes=[{"title":"LIVING_LIGHT","file":"images/7690-5000.jpg","thumb":"images/7690-5000.jpg","id":"cfcba1a8-9c4b-44ba-879c-22eb3abd837f"},{"title":"LIVING_DARK","file":"images/7690-5005.jpg","thumb":"images/7690-5005.jpg","id":"671fd696-c438-4eea-b6f3-6c977b888bcd"},{"title":"KITCHEN_LIGHT","file":"images/7690-5050.jpg","thumb":"images/7690-5050.jpg","id":"08178499-c757-41b3-afce-6fb04759d61a"},{"title":"KITCHEN_DARK","file":"images/7690-5055.jpg","thumb":"images/7690-5055.jpg","id":"21b287f6-06b5-4f00-859b-b84a79bb8528"},{"title":"DINING_LIGHT","file":"images/7690-5080.jpg","thumb":"images/7690-5080.jpg","id":"856081f5-9f0e-4486-9d6c-69030442c979"},{"title":"DINING_DARK","file":"images/7690-5085.jpg","thumb":"images/7690-5085.jpg","id":"4382d997-5128-4ae6-8eb2-c7c7b1a33134"},{"title":"BEDROOM_01_LIGHT","file":"images/7690-5100.jpg","thumb":"images/7690-5100.jpg","id":"68478d73-57fd-4bec-9e67-fcb3f97e1c96"},{"title":"BEDROOM_01_DARK","file":"images/7690-5105.jpg","thumb":"images/7690-5105.jpg","id":"5d26e844-9a7b-4341-bda0-86f6901662cf"},{"title":"BATHROOM_02_LIGHT","file":"images/7690-5140.jpg","thumb":"images/7690-5140.jpg","id":"2cdf9bc1-9aa8-46e4-a273-9be24aa633c6"},{"title":"BATHROOM_02_DARK","file":"images/7690-5145.jpg","thumb":"images/7690-5145.jpg","id":"9316f66e-6241-4d40-ba4c-b97b809d7eab"},{"title":"ENSUITE BATHROOM_LIGHT","file":"images/7690-5150.jpg","thumb":"images/7690-5150.jpg","id":"424925f9-b1ff-4e35-9d42-6563b64da22a"},{"title":"ENSUITE BATHROOM_DARK","file":"images/7690-5155.jpg","thumb":"images/7690-5155.jpg","id":"a27cc265-7ab2-4a8d-a4f7-7236ca049218"},{"title":"CORRIDOR_01_LIGHT","file":"images/7690-5160.jpg","thumb":"images/7690-5160.jpg","id":"aae119de-10a9-4296-a1ad-a02c800eabd1"},{"title":"CORRIDOR_01_DARK","file":"images/7690-5165.jpg","thumb":"images/7690-5165.jpg","id":"9095e794-2e8e-41fa-885f-abe2198e7c7d"},{"title":"CORRIDOR_02_LIGHT","file":"images/7690-5170.jpg","thumb":"images/7690-5170.jpg","id":"b4d1f858-cc4d-42c4-b7cd-37a5811ade85"},{"title":"CORRIDOR_02_DARK","file":"images/7690-5175.jpg","thumb":"images/7690-5175.jpg","id":"1313a97c-397e-4c8c-9131-47e8bf57bd21"},{"title":"CORRIDOR_03_LIGHT","file":"images/7690-5180.jpg","thumb":"images/7690-5180.jpg","id":"f0cc1235-c474-4dfb-8eb4-1ab334b31817"},{"title":"CORRIDOR_03_DARK","file":"images/7690-5185.jpg","thumb":"images/7690-5185.jpg","id":"4969e61b-2924-4e2b-bdfd-5bfe79af84b6"},{"title":"BEDROOM_02_LIGHT","file":"images/7690-5190.jpg","thumb":"images/7690-5190.jpg","id":"55b50599-a487-4ff8-87e1-9a0fba316da0"},{"title":"BEDROOM_02_DARK","file":"images/7690-5195.jpg","thumb":"images/7690-5195.jpg","id":"521be393-a26a-4c30-bcf5-78cfef0b9ed5"}];
+const scenes=[{"title":"Living_Light","file":"images/7690-5000.jpg","thumb":"thumbs/7690-5000.jpg","id":"6e58bc0d-486e-45fa-a3b8-0e4899ab340a"},{"title":"Living_Dark","file":"images/7690-5005.jpg","thumb":"thumbs/7690-5005.jpg","id":"4c83c0a7-0176-421c-8d7d-618d835b7721"},{"title":"Kitchen_Light","file":"images/7690-5050.jpg","thumb":"thumbs/7690-5050.jpg","id":"076df4eb-13b8-4883-b81d-941b23ce02cf"},{"title":"Kitchen_Dark","file":"images/7690-5055.jpg","thumb":"thumbs/7690-5055.jpg","id":"05424935-88ff-43e5-98e3-8ac2a14c46e6"},{"title":"Dining_Light","file":"images/7690-5080.jpg","thumb":"thumbs/7690-5080.jpg","id":"f0c768e2-ed1e-4a11-9f5e-a734c3ed722b"},{"title":"Dining_Dark","file":"images/7690-5085.jpg","thumb":"thumbs/7690-5085.jpg","id":"da165912-ffc3-4e4e-9593-db7bf04b8d90"},{"title":"Bedroom_01_Light","file":"images/7690-5100.jpg","thumb":"thumbs/7690-5100.jpg","id":"f26d59c1-8a1b-4114-b764-f412178c46ad"},{"title":"Bedroom_01_Dark","file":"images/7690-5105.jpg","thumb":"thumbs/7690-5105.jpg","id":"df294ac8-2e74-413d-88af-0c00dba5e9f4"},{"title":"Bathroom_02_Light","file":"images/7690-5140.jpg","thumb":"thumbs/7690-5140.jpg","id":"fd868e6d-c313-4d95-9da6-15207c6991b1"},{"title":"Bathroom_02_Dark","file":"images/7690-5145.jpg","thumb":"thumbs/7690-5145.jpg","id":"fead79de-0c75-471d-98e7-f3adb0395a03"},{"title":"Ensuite_Bathroom_Light","file":"images/7690-5150.jpg","thumb":"thumbs/7690-5150.jpg","id":"57c870cb-8cd4-4e13-956a-cd2a0cdec190"},{"title":"Ensuite_Bathroom_Dark","file":"images/7690-5155.jpg","thumb":"thumbs/7690-5155.jpg","id":"3e88b5e1-2526-4101-8f63-08326c9fbd20"},{"title":"Corridor_01_Light","file":"images/7690-5160.jpg","thumb":"thumbs/7690-5160.jpg","id":"d7ecaa52-dd7f-4175-8daa-3155448f9539"},{"title":"Corridor_01_Dark","file":"images/7690-5165.jpg","thumb":"thumbs/7690-5165.jpg","id":"27b91de2-5c07-4e31-9d42-66a5fee64c10"},{"title":"Corridor_02_Light","file":"images/7690-5170.jpg","thumb":"thumbs/7690-5170.jpg","id":"5212674d-7d1d-400f-b82f-37728ca351ec"},{"title":"Corridor_02_Dark","file":"images/7690-5175.jpg","thumb":"thumbs/7690-5175.jpg","id":"3507079b-bf8a-4a4a-a9f8-fa4b374cae33"},{"title":"Corridor_03_Light","file":"images/7690-5180.jpg","thumb":"thumbs/7690-5180.jpg","id":"4dd0f8ed-d043-4187-a84f-61d564e489c2"},{"title":"Corridor_03_Dark","file":"images/7690-5185.jpg","thumb":"thumbs/7690-5185.jpg","id":"88a30c91-aa75-4c9d-9d02-4578ebbc1ce2"},{"title":"Bedroom_02_Light","file":"images/7690-5190.jpg","thumb":"thumbs/7690-5190.jpg","id":"21dd3921-1d1f-47e3-b248-4cdb343a1ae2"},{"title":"Bedroom_02_Dark","file":"images/7690-5195.jpg","thumb":"thumbs/7690-5195.jpg","id":"ae6f1e62-b774-4dd0-b8ec-118849d81d4a"}];
 const canvas=document.getElementById('v'),menu=document.getElementById('menu');
 function viewer(){
  const gl=canvas.getContext('webgl',{antialias:true,preserveDrawingBuffer:false})||canvas.getContext('experimental-webgl',{antialias:true});
@@ -26,10 +26,26 @@ function viewer(){
  let t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
  let yaw=0,pitch=0,fov=1.309,drag=false,lx=0,ly=0,dead=false,raf=0,token=0;
 
- function setImage(url){
-   const my=++token,img=new Image();
-   img.onload=()=>{if(dead||my!==token)return;gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,0);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img);yaw=0;pitch=0;if(!raf)draw()};
-   img.src=url;
+ function setImage(lowUrl,highUrl){
+   const my=++token;
+   const apply=(img,resetView)=>{if(dead||my!==token)return;gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,0);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img);if(resetView){yaw=0;pitch=0}if(!raf)draw()};
+   const low=new Image();
+   low.onload=()=>{
+     if(dead||my!==token)return;
+     apply(low,true);
+     if(highUrl && highUrl!==lowUrl){
+       const high=new Image();
+       high.onload=()=>apply(high,false);
+       high.src=highUrl;
+     }
+   };
+   low.onerror=()=>{
+     if(!highUrl||dead||my!==token)return;
+     const high=new Image();
+     high.onload=()=>apply(high,true);
+     high.src=highUrl;
+   };
+   low.src=lowUrl||highUrl;
  }
  function draw(){if(dead||gl.isContextLost())return;let r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(2,Math.round(r.width*d)),h=Math.max(2,Math.round(r.height*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h)}gl.uniform2f(L.res,w,h);gl.uniform1f(L.yaw,yaw);gl.uniform1f(L.pitch,pitch);gl.uniform1f(L.fov,fov);gl.drawArrays(gl.TRIANGLES,0,6);raf=requestAnimationFrame(draw)}
  const dn=e=>{drag=true;lx=e.clientX;ly=e.clientY},mv=e=>{if(!drag)return;yaw-=(e.clientX-lx)*.005;pitch+=(e.clientY-ly)*.005;pitch=Math.max(-1.5,Math.min(1.5,pitch));lx=e.clientX;ly=e.clientY},up=()=>drag=false,wh=e=>{e.preventDefault();fov=Math.max(.45,Math.min(1.9,fov+e.deltaY*.001))};
@@ -37,13 +53,13 @@ function viewer(){
  return{setImage}
 }
 const V=viewer();
-function load(i){if(V)V.setImage(scenes[i].file)}
+function load(i){if(V)V.setImage(scenes[i].thumb,scenes[i].file)}
 function setActiveExport(i){
   [...menu.querySelectorAll('button')].forEach((b,idx)=>b.classList.toggle('active',idx===i));
 }
 scenes.forEach((s,i)=>{
   let b=document.createElement('button');
-  let img=document.createElement('img');img.src=s.thumb;img.alt=s.title+' thumbnail';
+  let img=document.createElement('img');img.loading='lazy';img.decoding='async';img.src=s.thumb;img.alt=s.title+' thumbnail';
   let label=document.createElement('span');label.textContent=s.title;
   b.appendChild(img);b.appendChild(label);
   b.addEventListener('click',()=>{load(i);setActiveExport(i)});
