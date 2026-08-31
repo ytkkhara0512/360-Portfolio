@@ -1,0 +1,69 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>King&#39;s Road Park 3 UF</title>
+<style>
+html,body{width:100%;height:100%;margin:0;background:#000;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Arial}
+canvas{width:100%;height:100%;display:block;cursor:grab}canvas:active{cursor:grabbing}
+#menu{position:fixed;left:16px;right:16px;bottom:16px;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;padding:8px;border-radius:12px;background:rgba(0,0,0,.50);backdrop-filter:blur(8px);overflow-x:auto;overflow-y:hidden;align-items:flex-start;scrollbar-width:thin}
+#menu button{position:relative;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:#111;padding:0;overflow:hidden;cursor:pointer;width:150px;height:90px;flex:0 0 150px}
+#menu button img{width:150px;height:90px;display:block;object-fit:cover}
+#menu button span{position:absolute;left:0;right:0;bottom:0;padding:7px 8px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.82));font:12px system-ui;text-align:left}
+#menu button.active{outline:2px solid #fff}
+#tip{position:fixed;top:14px;left:50%;transform:translateX(-50%);color:white;background:rgba(0,0,0,.45);padding:7px 10px;border-radius:8px;font-size:13px;pointer-events:none}
+</style></head><body><canvas id="v"></canvas><div id="menu"></div><div id="tip">Drag to look around · wheel to zoom</div>
+<script>
+const scenes=[{"title":"Corridor_05_Light","file":"images/7690-5660.jpg","thumb":"thumbs/7690-5660.jpg","id":"4d2d95d1-0712-4f97-b413-28c66c60b2a0"},{"title":"Corridor_05_Dark","file":"images/7690-5661.jpg","thumb":"thumbs/7690-5661.jpg","id":"e01eb2c1-2a33-449f-98ed-358157eedb03"},{"title":"Master Bathroom_Light","file":"images/7690-5670.jpg","thumb":"thumbs/7690-5670.jpg","id":"a8c183dc-82f7-4fe9-aed2-724f1b30ab13"},{"title":"Master Bathroom_Dark","file":"images/7690-5671.jpg","thumb":"thumbs/7690-5671.jpg","id":"0944bb45-1b7c-4220-8e41-4f8725205683"},{"title":"Master Bedroom_Light","file":"images/7690-5680.jpg","thumb":"thumbs/7690-5680.jpg","id":"6866a693-c2aa-457a-bf4e-7385dfa3fd49"},{"title":"Master Bedroom_Dark","file":"images/7690-5681.jpg","thumb":"thumbs/7690-5681.jpg","id":"3ef59c70-5ba6-40ba-b055-128317668ebb"},{"title":"Dressing Room_Light","file":"images/7690-5685.jpg","thumb":"thumbs/7690-5685.jpg","id":"81de616c-6e23-4e1b-80f3-88056ece6fa7"},{"title":"Dressing Room_Dark","file":"images/7690-5686.jpg","thumb":"thumbs/7690-5686.jpg","id":"23cce654-9ec2-4be4-9f4d-02c1bfc292a5"},{"title":"Bedroom_02_Light","file":"images/7690-5692.jpg","thumb":"thumbs/7690-5692.jpg","id":"00d14732-4860-49d0-8982-b8141666e4e2"},{"title":"Bedroom_02_Dark","file":"images/7690-5693.jpg","thumb":"thumbs/7690-5693.jpg","id":"69f63336-cda7-4be4-9d94-2b921872b9ab"},{"title":"Bathroom_02_Light","file":"images/7690-5695.jpg","thumb":"thumbs/7690-5695.jpg","id":"bba1d58d-37b7-4435-bff9-36c707faa600"},{"title":"Bathroom_02_Dark","file":"images/7690-5696.jpg","thumb":"thumbs/7690-5696.jpg","id":"b32511ad-3e1e-4b8d-b2f8-3a0db43203f8"},{"title":"Bedroom_03_Light","file":"images/7690-5702.jpg","thumb":"thumbs/7690-5702.jpg","id":"e9e8e3d7-6f91-4bde-919a-601aa5b2d5e3"},{"title":"Bedroom_03_Dark","file":"images/7690-5703.jpg","thumb":"thumbs/7690-5703.jpg","id":"f5e26593-4f73-47a8-8e11-30f5cd8c65f8"},{"title":"Bathroom_03_Light","file":"images/7690-5705.jpg","thumb":"thumbs/7690-5705.jpg","id":"1bad939b-a9d2-4cc3-a62b-59abbd4a6ff4"},{"title":"Bathroom_03_Dark","file":"images/7690-5706.jpg","thumb":"thumbs/7690-5706.jpg","id":"8e96d9ff-de91-4a0c-9d3b-9e7064be1f5c"},{"title":"Bedroom_04_Light","file":"images/7690-5712.jpg","thumb":"thumbs/7690-5712.jpg","id":"98159f77-5ad9-4bca-85c4-688edc326b74"},{"title":"Bedroom_04_Dark","file":"images/7690-5713.jpg","thumb":"thumbs/7690-5713.jpg","id":"d649a8f4-38f1-461a-9674-e166e2826f07"},{"title":"Bathroom_04_Light","file":"images/7690-5715.jpg","thumb":"thumbs/7690-5715.jpg","id":"a176980a-c62f-4633-ba89-3e75f4016f74"},{"title":"Bathroom_04_Dark","file":"images/7690-5716.jpg","thumb":"thumbs/7690-5716.jpg","id":"3b099a93-7c6d-4ee7-b075-8a7173c92c92"}];
+const canvas=document.getElementById('v'),menu=document.getElementById('menu');
+function viewer(){
+ const gl=canvas.getContext('webgl',{antialias:true,preserveDrawingBuffer:false})||canvas.getContext('experimental-webgl',{antialias:true});
+ if(!gl){alert('WebGL is required');return null}
+ const vs='attribute vec2 p;varying vec2 uv;void main(){uv=(p+1.0)*0.5;gl_Position=vec4(p,0.0,1.0);}';
+ const fs='precision highp float;varying vec2 uv;uniform sampler2D tex;uniform vec2 res;uniform float yaw,pitch,fov;const float PI=3.141592653589793;void main(){vec2 q=(gl_FragCoord.xy/res-0.5)*2.0;q.x*=res.x/res.y;float z=1.0/tan(fov*0.5);vec3 d=normalize(vec3(q.x,q.y,z));float cp=cos(pitch),sp=sin(pitch);d=vec3(d.x,cp*d.y-sp*d.z,sp*d.y+cp*d.z);float cy=cos(yaw),sy=sin(yaw);d=vec3(cy*d.x+sy*d.z,d.y,-sy*d.x+cy*d.z);float lon=atan(d.x,d.z),lat=asin(clamp(d.y,-1.0,1.0));vec2 t=vec2(0.5+lon/(2.0*PI),0.5-lat/PI);gl_FragColor=texture2D(tex,t);}';
+ function sh(t,s){let o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o}
+ let pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(pr);gl.useProgram(pr);
+ let b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+ let a=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+ let L={res:gl.getUniformLocation(pr,'res'),yaw:gl.getUniformLocation(pr,'yaw'),pitch:gl.getUniformLocation(pr,'pitch'),fov:gl.getUniformLocation(pr,'fov')};
+ let t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+ let yaw=0,pitch=0,fov=1.309,drag=false,lx=0,ly=0,dead=false,raf=0,token=0;
+
+ function setImage(lowUrl,highUrl){
+   const my=++token;
+   const apply=(img,resetView)=>{if(dead||my!==token)return;gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,0);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img);if(resetView){yaw=0;pitch=0}if(!raf)draw()};
+   const low=new Image();
+   low.onload=()=>{
+     if(dead||my!==token)return;
+     apply(low,true);
+     if(highUrl && highUrl!==lowUrl){
+       const high=new Image();
+       high.onload=()=>apply(high,false);
+       high.src=highUrl;
+     }
+   };
+   low.onerror=()=>{
+     if(!highUrl||dead||my!==token)return;
+     const high=new Image();
+     high.onload=()=>apply(high,true);
+     high.src=highUrl;
+   };
+   low.src=lowUrl||highUrl;
+ }
+ function draw(){if(dead||gl.isContextLost())return;let r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(2,Math.round(r.width*d)),h=Math.max(2,Math.round(r.height*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h)}gl.uniform2f(L.res,w,h);gl.uniform1f(L.yaw,yaw);gl.uniform1f(L.pitch,pitch);gl.uniform1f(L.fov,fov);gl.drawArrays(gl.TRIANGLES,0,6);raf=requestAnimationFrame(draw)}
+ const dn=e=>{drag=true;lx=e.clientX;ly=e.clientY},mv=e=>{if(!drag)return;yaw-=(e.clientX-lx)*.005;pitch+=(e.clientY-ly)*.005;pitch=Math.max(-1.5,Math.min(1.5,pitch));lx=e.clientX;ly=e.clientY},up=()=>drag=false,wh=e=>{e.preventDefault();fov=Math.max(.45,Math.min(1.9,fov+e.deltaY*.001))};
+ canvas.addEventListener('pointerdown',dn);canvas.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);canvas.addEventListener('wheel',wh,{passive:false});
+ return{setImage}
+}
+const V=viewer();
+function load(i){if(V)V.setImage(scenes[i].thumb,scenes[i].file)}
+function setActiveExport(i){
+  [...menu.querySelectorAll('button')].forEach((b,idx)=>b.classList.toggle('active',idx===i));
+}
+scenes.forEach((s,i)=>{
+  let b=document.createElement('button');
+  let img=document.createElement('img');img.loading='lazy';img.decoding='async';img.src=s.thumb;img.alt=s.title+' thumbnail';
+  let label=document.createElement('span');label.textContent=s.title;
+  b.appendChild(img);b.appendChild(label);
+  b.addEventListener('click',()=>{load(i);setActiveExport(i)});
+  menu.appendChild(b);
+});
+if(scenes.length<2)menu.style.display='none';load(0);setActiveExport(0);setTimeout(()=>document.getElementById('tip').style.display='none',3500);
+</script></body></html>
