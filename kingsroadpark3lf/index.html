@@ -1,0 +1,69 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>King&#39;s Road Park 3 LF</title>
+<style>
+html,body{width:100%;height:100%;margin:0;background:#000;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Arial}
+canvas{width:100%;height:100%;display:block;cursor:grab}canvas:active{cursor:grabbing}
+#menu{position:fixed;left:16px;right:16px;bottom:16px;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;padding:8px;border-radius:12px;background:rgba(0,0,0,.50);backdrop-filter:blur(8px);overflow-x:auto;overflow-y:hidden;align-items:flex-start;scrollbar-width:thin}
+#menu button{position:relative;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:#111;padding:0;overflow:hidden;cursor:pointer;width:150px;height:90px;flex:0 0 150px}
+#menu button img{width:150px;height:90px;display:block;object-fit:cover}
+#menu button span{position:absolute;left:0;right:0;bottom:0;padding:7px 8px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.82));font:12px system-ui;text-align:left}
+#menu button.active{outline:2px solid #fff}
+#tip{position:fixed;top:14px;left:50%;transform:translateX(-50%);color:white;background:rgba(0,0,0,.45);padding:7px 10px;border-radius:8px;font-size:13px;pointer-events:none}
+</style></head><body><canvas id="v"></canvas><div id="menu"></div><div id="tip">Drag to look around · wheel to zoom</div>
+<script>
+const scenes=[{"title":"Living _Light","file":"images/7690-5600.jpg","thumb":"thumbs/7690-5600.jpg","id":"c5304666-84e0-4b24-95ec-7177e75744a1"},{"title":"Living_Dark","file":"images/7690-5601.jpg","thumb":"thumbs/7690-5601.jpg","id":"4f6b04c4-a3f5-4810-bd5e-5cf301e2f014"},{"title":"Dining_Light","file":"images/7690-5610.jpg","thumb":"thumbs/7690-5610.jpg","id":"7be3d4e3-3528-4531-be75-1f848a948c73"},{"title":"Dining_Dark","file":"images/7690-5611.jpg","thumb":"thumbs/7690-5611.jpg","id":"a413011e-9989-45a6-8c9e-3210178916ce"},{"title":"Corridor_01_Light","file":"images/7690-5615.jpg","thumb":"thumbs/7690-5615.jpg","id":"accaef8a-2c35-48c9-9ed5-15e43c7f41d8"},{"title":"Corridor_01_Dark","file":"images/7690-5616.jpg","thumb":"thumbs/7690-5616.jpg","id":"f94f0b5f-5899-4222-8d00-33c105ea0a70"},{"title":"Kitchen_Light","file":"images/7690-5620.jpg","thumb":"thumbs/7690-5620.jpg","id":"49ae7be0-2ffc-46b5-80df-23ef15f9cc70"},{"title":"Kitchen_Dark","file":"images/7690-5621.jpg","thumb":"thumbs/7690-5621.jpg","id":"3d0f3c18-7b65-4b39-835f-49738db9adf7"},{"title":"Corridor_02_Light","file":"images/7690-5625.jpg","thumb":"thumbs/7690-5625.jpg","id":"12e3cdcf-75d6-4fa7-b245-6debf01c5d5f"},{"title":"Corridor_02_Dark","file":"images/7690-5626.jpg","thumb":"thumbs/7690-5626.jpg","id":"b110de46-73ad-47e5-ac60-a814115d95c3"},{"title":"Living_02_Light","file":"images/7690-5630.jpg","thumb":"thumbs/7690-5630.jpg","id":"c55c662c-7f2b-4260-b392-32eeb26aa276"},{"title":"Living_02_Dark","file":"images/7690-5631.jpg","thumb":"thumbs/7690-5631.jpg","id":"e3dda33b-a26c-417a-9351-93097bef0ef7"},{"title":"Study_Light","file":"images/7690-5640.jpg","thumb":"thumbs/7690-5640.jpg","id":"4792429a-af63-449d-aee9-98385b90564d"},{"title":"Study_Dark","file":"images/7690-5641.jpg","thumb":"thumbs/7690-5641.jpg","id":"c97430d1-a1e1-43f6-b6a8-f0ab833a11a3"},{"title":"Corridor_03_Light","file":"images/7690-5650.jpg","thumb":"thumbs/7690-5650.jpg","id":"d0d8eeb0-12db-4d5c-9c4b-bcc22a73592e"},{"title":"Corridor_03_Dark","file":"images/7690-5651.jpg","thumb":"thumbs/7690-5651.jpg","id":"8a6b25f5-aa53-4625-b1d0-770ec90bdf26"},{"title":"Corridor_04_Light","file":"images/7690-5655.jpg","thumb":"thumbs/7690-5655.jpg","id":"ca3c3bd8-e5e2-4eba-ade5-f8fe0e4f21b8"},{"title":"Corridor_04_Dark","file":"images/7690-5656.jpg","thumb":"thumbs/7690-5656.jpg","id":"2097260d-c04c-4e33-8bc7-af40444c6cdc"},{"title":"Kitchen_02_Light","file":"images/7690-5720.jpg","thumb":"thumbs/7690-5720.jpg","id":"91d88338-a76a-4609-be60-9f6f8d5f7591"},{"title":"Kitchen_02_Dark","file":"images/7690-5721.jpg","thumb":"thumbs/7690-5721.jpg","id":"7e654fcb-7133-4ac9-8e14-7fb51bbfcc11"}];
+const canvas=document.getElementById('v'),menu=document.getElementById('menu');
+function viewer(){
+ const gl=canvas.getContext('webgl',{antialias:true,preserveDrawingBuffer:false})||canvas.getContext('experimental-webgl',{antialias:true});
+ if(!gl){alert('WebGL is required');return null}
+ const vs='attribute vec2 p;varying vec2 uv;void main(){uv=(p+1.0)*0.5;gl_Position=vec4(p,0.0,1.0);}';
+ const fs='precision highp float;varying vec2 uv;uniform sampler2D tex;uniform vec2 res;uniform float yaw,pitch,fov;const float PI=3.141592653589793;void main(){vec2 q=(gl_FragCoord.xy/res-0.5)*2.0;q.x*=res.x/res.y;float z=1.0/tan(fov*0.5);vec3 d=normalize(vec3(q.x,q.y,z));float cp=cos(pitch),sp=sin(pitch);d=vec3(d.x,cp*d.y-sp*d.z,sp*d.y+cp*d.z);float cy=cos(yaw),sy=sin(yaw);d=vec3(cy*d.x+sy*d.z,d.y,-sy*d.x+cy*d.z);float lon=atan(d.x,d.z),lat=asin(clamp(d.y,-1.0,1.0));vec2 t=vec2(0.5+lon/(2.0*PI),0.5-lat/PI);gl_FragColor=texture2D(tex,t);}';
+ function sh(t,s){let o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o}
+ let pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(pr);gl.useProgram(pr);
+ let b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+ let a=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+ let L={res:gl.getUniformLocation(pr,'res'),yaw:gl.getUniformLocation(pr,'yaw'),pitch:gl.getUniformLocation(pr,'pitch'),fov:gl.getUniformLocation(pr,'fov')};
+ let t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+ let yaw=0,pitch=0,fov=1.309,drag=false,lx=0,ly=0,dead=false,raf=0,token=0;
+
+ function setImage(lowUrl,highUrl){
+   const my=++token;
+   const apply=(img,resetView)=>{if(dead||my!==token)return;gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,0);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img);if(resetView){yaw=0;pitch=0}if(!raf)draw()};
+   const low=new Image();
+   low.onload=()=>{
+     if(dead||my!==token)return;
+     apply(low,true);
+     if(highUrl && highUrl!==lowUrl){
+       const high=new Image();
+       high.onload=()=>apply(high,false);
+       high.src=highUrl;
+     }
+   };
+   low.onerror=()=>{
+     if(!highUrl||dead||my!==token)return;
+     const high=new Image();
+     high.onload=()=>apply(high,true);
+     high.src=highUrl;
+   };
+   low.src=lowUrl||highUrl;
+ }
+ function draw(){if(dead||gl.isContextLost())return;let r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(2,Math.round(r.width*d)),h=Math.max(2,Math.round(r.height*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h)}gl.uniform2f(L.res,w,h);gl.uniform1f(L.yaw,yaw);gl.uniform1f(L.pitch,pitch);gl.uniform1f(L.fov,fov);gl.drawArrays(gl.TRIANGLES,0,6);raf=requestAnimationFrame(draw)}
+ const dn=e=>{drag=true;lx=e.clientX;ly=e.clientY},mv=e=>{if(!drag)return;yaw-=(e.clientX-lx)*.005;pitch+=(e.clientY-ly)*.005;pitch=Math.max(-1.5,Math.min(1.5,pitch));lx=e.clientX;ly=e.clientY},up=()=>drag=false,wh=e=>{e.preventDefault();fov=Math.max(.45,Math.min(1.9,fov+e.deltaY*.001))};
+ canvas.addEventListener('pointerdown',dn);canvas.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);canvas.addEventListener('wheel',wh,{passive:false});
+ return{setImage}
+}
+const V=viewer();
+function load(i){if(V)V.setImage(scenes[i].thumb,scenes[i].file)}
+function setActiveExport(i){
+  [...menu.querySelectorAll('button')].forEach((b,idx)=>b.classList.toggle('active',idx===i));
+}
+scenes.forEach((s,i)=>{
+  let b=document.createElement('button');
+  let img=document.createElement('img');img.loading='lazy';img.decoding='async';img.src=s.thumb;img.alt=s.title+' thumbnail';
+  let label=document.createElement('span');label.textContent=s.title;
+  b.appendChild(img);b.appendChild(label);
+  b.addEventListener('click',()=>{load(i);setActiveExport(i)});
+  menu.appendChild(b);
+});
+if(scenes.length<2)menu.style.display='none';load(0);setActiveExport(0);setTimeout(()=>document.getElementById('tip').style.display='none',3500);
+</script></body></html>
